@@ -4,8 +4,12 @@ if (count($argv) <= 1) {
     exit;
 }
 
+require_once "class/TaskManager.php";
+
 $fileName = "tasks.json";
+// $fileName = "";
 $action = $argv[1];
+$taskManager = new TaskManager($fileName);
 
 switch ($action)
 {
@@ -16,7 +20,8 @@ switch ($action)
             echoError("Не введено описание задачи");
             exit;
         }
-        addTask($description);
+        
+        $taskManager->addTask($description);
         break;
 
     case "update":
@@ -33,7 +38,8 @@ switch ($action)
             echoError("Не введено описание задачи");
             exit;
         }
-        updateTask($taskId, $description);
+
+        $taskManager->updateTask($taskId, $description);
         break;
 
     case "delete":
@@ -43,6 +49,8 @@ switch ($action)
             echoError("Неверный тип номера задачи");
             exit;
         }
+        $taskManager->deleteTask($taskId, $description);
+        break;
 
     case "mark-in-progress":
         $taskId = $argv[2];
@@ -51,6 +59,8 @@ switch ($action)
             echoError("Неверный тип номера задачи");
             exit;
         }
+        $taskManager->markTask($taskId, "in-progress");
+        break;
 
     case "mark-done":
         $taskId = $argv[2];
@@ -59,6 +69,8 @@ switch ($action)
             echoError("Неверный тип номера задачи");
             exit;
         }
+        $taskManager->markTask($taskId, "done");
+        break;
     case "list":
     
     default:
@@ -66,53 +78,6 @@ switch ($action)
         exit;
         break;
 }
-
-function addTask($description)
-{
-    global $fileName;
-    
-    if (!$fp = fopen($fileName, 'a'))
-    {
-        echoError("Cannot open file ($fileName)");
-        exit;
-    }
-    $content = file_get_contents($fileName);
-    $tasks = json_decode($content) ?? [];
-    $newTask = [
-        "id" => count($tasks),
-        "description" => $description,
-        "status" => "todo",
-        "createdAt" => strtotime("now"),
-        "updatedAt" => strtotime("now"),
-    ];
-    $tasks[count($tasks)] = $newTask;
-    $content = json_encode($tasks);
-    file_put_contents($fileName, $content);
-    fclose($fp);
-}
-
-function updateTask($id, $description)
-{
-    global $fileName;
-    
-    if (!$fp = fopen($fileName, 'a'))
-    {
-        echoError("Cannot open file ($fileName)");
-        exit;
-    }
-    $content = file_get_contents($fileName);
-    $tasks = json_decode($content) ?? [];
-    if (!$tasks[$id]) {
-        echoError("Задачи с номером $fileName не существует");
-        exit;
-    }
-    $tasks[$id]->description = $description;
-    $tasks[$id]->updatedAt = strtotime("now");
-    $content = json_encode($tasks);
-    file_put_contents($fileName, $content);
-    fclose($fp);
-}
-
 
 function echoError($message)
 {

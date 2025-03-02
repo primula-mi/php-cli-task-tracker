@@ -54,9 +54,8 @@ class TaskManager
             "updatedAt" => time(),
         ];
         $tasks[count($tasks)] = $newTask;
-        $content = json_encode($tasks);
-        file_put_contents($this->taskFilePath, $content);
-        fclose($this->fp);
+        
+        $this->saveTasks($tasks);
         return ["status" => "success", "code" => 200, "message" => "Added a new task"];
     }
     
@@ -73,11 +72,10 @@ class TaskManager
         if (!$tasks[$id]) {
             return ["status" => "error", "code" => 404, "message" => "The task with the $id number does not exist"];
         }
-        $tasks[$id]->description = $description;
-        $tasks[$id]->updatedAt = time();
-        $content = json_encode($tasks);
-        file_put_contents($this->taskFilePath, $content);
-        fclose($this->fp);
+        $tasks[$id]["description"] = $description;
+        $tasks[$id]["updatedAt"] = time();
+
+        $this->saveTasks($tasks);
         return ["status" => "success", "code" => 200, "message" => "Task description $id updated"];
     }
 
@@ -96,9 +94,7 @@ class TaskManager
         
         unset($tasks[$id]);
         
-        $content = json_encode($tasks);
-        file_put_contents($this->taskFilePath, $content);
-        fclose($this->fp);
+        $this->saveTasks($tasks);
         return ["status" => "success", "code" => 200, "message" => "Task $id deleted"];
     }
 
@@ -117,12 +113,10 @@ class TaskManager
             return ["status" => "error", "code" => 404, "message" => "The task with the $id number does not exist"];
         }
         
-        $tasks[$id]->status = $status;
-        $tasks[$id]->updatedAt = time();
-        
-        $content = json_encode($tasks);
-        file_put_contents($this->taskFilePath, $content);
-        fclose($this->fp);
+        $tasks[$id]["status"] = $status;
+        $tasks[$id]["updatedAt"] = time();
+
+        $this->saveTasks($tasks);
         return ["status" => "success", "code" => 200, "message" => "The task status $id has been changed to '$status'"];
     }
 
@@ -138,7 +132,7 @@ class TaskManager
         $output = [];
         if ($status) {
             foreach ($tasks as $key => $task) {
-                if ($task->status == $status) {
+                if ($task["status"] == $status) {
                     $output[] = $task;
                 }
             }
@@ -158,5 +152,24 @@ class TaskManager
         $tasks = json_decode($content, true) ?? [];
         return $tasks;
     } 
+
+    /**
+     * Saves tasks to the file.
+     * 
+     * @param array $tasks Array of tasks.
+     */
+    private function saveTasks(array $tasks): void
+    {
+        file_put_contents($this->taskFilePath, json_encode($tasks));
+    }
     
+    /**
+     * Closes the file when the object is destroyed.
+     */
+    public function __destruct()
+    {
+        if ($this->fp) {
+            fclose($this->fp);
+        }
+    }
 }

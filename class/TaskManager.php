@@ -82,7 +82,7 @@ class TaskManager
         $content = json_encode($tasks);
         file_put_contents($this->taskFilePath, $content);
         fclose($this->fp);
-        return ["status" => "success", "code" => 200, "message" => "The task status $id has been changed to'$status'"];
+        return ["status" => "success", "code" => 200, "message" => "The task status $id has been changed to '$status'"];
     }
 
     public function getTasksList($status = "")

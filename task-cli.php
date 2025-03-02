@@ -79,6 +79,10 @@ switch ($action)
     case "list":
         $status = $argv[2] ?? "";
         $tasksList = $taskManager->getTasksList($status);
+        if (!count($tasksList)) {
+            echoError("The list is empty");
+            exit;
+        }
         echo "Task list\n";
         echo taskTable($tasksList);
         break;

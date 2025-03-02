@@ -1,6 +1,6 @@
 <?php
 if (count($argv) <= 1) {
-    echoError("Введено недостаточное количество аргументов");
+    echoError("Insufficient number of arguments entered");
     exit;
 }
 
@@ -17,68 +17,74 @@ switch ($action)
         $description = $argv[2];
         if (!$description)
         {
-            echoError("Не введено описание задачи");
+            echoError("Task description not entered");
             exit;
         }
         
-        $taskManager->addTask($description);
+        $responce = $taskManager->addTask($description);
+        echoResponce($responce);
         break;
 
     case "update":
         $taskId = $argv[2];
         if (!is_numeric($taskId))
         {
-            echoError("Неверный тип номера задачи");
+            echoError("Incorrect issue number type");
             exit;
         }
 
         $description = $argv[3];
         if (!$description)
         {
-            echoError("Не введено описание задачи");
+            echoError("Task description not entered");
             exit;
         }
 
-        $taskManager->updateTask($taskId, $description);
+        $responce = $taskManager->updateTask($taskId, $description);
+        echoResponce($responce);
         break;
 
     case "delete":
         $taskId = $argv[2];
         if (!is_numeric($taskId))
         {
-            echoError("Неверный тип номера задачи");
+            echoError("Incorrect issue number type");
             exit;
         }
-        $taskManager->deleteTask($taskId, $description);
+        $responce = $taskManager->deleteTask($taskId, $description);
+        echoResponce($responce);
         break;
 
     case "mark-in-progress":
         $taskId = $argv[2];
         if (!is_numeric($taskId))
         {
-            echoError("Неверный тип номера задачи");
+            echoError("Incorrect issue number type");
             exit;
         }
-        $taskManager->markTask($taskId, "in-progress");
+        $responce = $taskManager->markTask($taskId, "in-progress");
+        echoResponce($responce);
         break;
 
     case "mark-done":
         $taskId = $argv[2];
         if (!is_numeric($taskId))
         {
-            echoError("Неверный тип номера задачи");
+            echoError("Incorrect issue number type");
             exit;
         }
-        $taskManager->markTask($taskId, "done");
+        $responce = $taskManager->markTask($taskId, "done");
+        echoResponce($responce);
         break;
     case "list":
         $status = $argv[2] ?? "";
-        $list = $taskManager->getTasksList($status);
-        var_dump($list);
+        $tasksList = $taskManager->getTasksList($status);
+        echo "Task list\n";
+        echo taskTable($tasksList);
         break;
     
     default:
-        echoError("Действие не найдено");
+        echoError("Action not found");
         exit;
         break;
 }
@@ -91,4 +97,36 @@ function echoError($message)
 function echoSuccess($message)
 {
     echo "\e[1;32m{$message}\e[0m\n";
+}
+
+function echoResponce($responce)
+{
+    $echoFunction = "echo" . ucfirst($responce["status"]);
+    $echoFunction($responce["message"]);
+}
+
+function taskTable($tasksList)
+{
+    $columns = [];
+    foreach ($tasksList as $row_key => $row)
+    {
+        foreach (get_object_vars($row) as $cell_key => $cell)
+        {
+            $length = strlen($cell);
+            if (empty($columns[$cell_key]) || $columns[$cell_key] < $length)
+            {
+             $columns[$cell_key] = $length;
+            }
+        }
+    }
+    
+    $table = '';
+    foreach ($tasksList as $row_key => $row)
+    {
+        foreach (get_object_vars($row) as $cell_key => $cell)
+        $table .= str_pad($cell, $columns[$cell_key]) . '   ';
+        $table .= PHP_EOL;
+    }
+    return $table;
+     
 }

@@ -12,7 +12,7 @@ class TaskManager
         $this->taskFilePath = $path;
         if (!$this->taskFilePath)
         {
-            throw new Exception("Не указан путь до файла c задачами");
+            throw new Exception("The path to the task file is not specified");
         }
         
         if (!$this->fp = fopen($this->taskFilePath, 'a'))
@@ -24,8 +24,7 @@ class TaskManager
 
     public function addTask($description)
     {
-        $content = file_get_contents($this->taskFilePath);
-        $tasks = json_decode($content) ?? [];
+        $tasks = $this->importTasks();
         $newTask = [
             "id" => count($tasks),
             "description" => $description,
@@ -37,30 +36,28 @@ class TaskManager
         $content = json_encode($tasks);
         file_put_contents($this->taskFilePath, $content);
         fclose($this->fp);
-        return true;
+        return ["status" => "success", "code" => 200, "message" => "Added a new task"];
     }
     
     public function updateTask($id, $description)
     {
-        $content = file_get_contents($this->taskFilePath);
-        $tasks = json_decode($content) ?? [];
+        $tasks = $this->importTasks();
         if (!$tasks[$id]) {
-            echoError("Задачи с номером $id не существует");
-            exit;
+            return ["status" => "error", "code" => 404, "message" => "The task with the $id number does not exist"];
         }
         $tasks[$id]->description = $description;
         $tasks[$id]->updatedAt = strtotime("now");
         $content = json_encode($tasks);
         file_put_contents($this->taskFilePath, $content);
         fclose($this->fp);
+        return ["status" => "success", "code" => 200, "message" => "Task description $id updated"];
     }
 
     public function deleteTask($id)
     {
         $tasks = $this->importTasks();
         if (!$tasks[$id]) {
-            echoError("Задачи с номером $id не существует");
-            exit;
+            return ["status" => "error", "code" => 404, "message" => "The task with the $id number does not exist"];
         }
         
         unset($tasks[$id]);
@@ -68,6 +65,7 @@ class TaskManager
         $content = json_encode($tasks);
         file_put_contents($this->taskFilePath, $content);
         fclose($this->fp);
+        return ["status" => "success", "code" => 200, "message" => "Task $id deleted"];
     }
 
     public function markTask($id, $status)
@@ -75,8 +73,7 @@ class TaskManager
         $tasks = $this->importTasks();
         
         if (!$tasks[$id]) {
-            echoError("Задачи с номером $id не существует");
-            exit;
+            return ["status" => "error", "code" => 404, "message" => "The task with the $id number does not exist"];
         }
         
         $tasks[$id]->status = $status;
@@ -85,6 +82,7 @@ class TaskManager
         $content = json_encode($tasks);
         file_put_contents($this->taskFilePath, $content);
         fclose($this->fp);
+        return ["status" => "success", "code" => 200, "message" => "The task status $id has been changed to'$status'"];
     }
 
     public function getTasksList($status = "")
@@ -109,6 +107,9 @@ class TaskManager
     {
         $content = file_get_contents($this->taskFilePath);
         $tasks = json_decode($content) ?? [];
+        if (!is_array($tasks)) {
+            $tasks = get_object_vars($tasks);
+        }
         return $tasks;
     } 
 }

@@ -43,7 +43,7 @@ class TaskManager
      * @param string $description Task description.
      * @return array Operation result.
     */  
-    public function addTask($description)
+    public function addTask(string $description): array
     {
         $tasks = $this->importTasks();
         $newTask = [
@@ -66,7 +66,7 @@ class TaskManager
      * @param string $description New task description.
      * @return array Operation result.
     */
-    public function updateTask($id, $description)
+    public function updateTask(int $id, string $description): array
     {
         $tasks = $this->importTasks();
         if (!$tasks[$id]) {
@@ -85,7 +85,7 @@ class TaskManager
      * @param int $id Task ID.
      * @return array Operation result.
      */
-    public function deleteTask($id)
+    public function deleteTask(int $id): array
     {
         $tasks = $this->importTasks();
         if (!$tasks[$id]) {
@@ -105,7 +105,7 @@ class TaskManager
      * @param string $status New task status.
      * @return array Operation result.
      */
-    public function markTask($id, $status)
+    public function markTask(int $id, string $status): array
     {
         $tasks = $this->importTasks();
         
@@ -126,7 +126,7 @@ class TaskManager
      * @param string $status Filter by task status.
      * @return array List of tasks.
     */
-    public function getTasksList($status = "")
+    public function getTasksList(string $status = ""): array
     {
         $tasks = $this->importTasks();
         $output = [];
@@ -146,7 +146,7 @@ class TaskManager
      * 
      * @return array Array of tasks.
     */
-    private function importTasks()
+    private function importTasks(): array
     {
         $content = file_get_contents($this->taskFilePath);
         $tasks = json_decode($content, true) ?? [];

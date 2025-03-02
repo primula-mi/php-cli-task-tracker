@@ -87,7 +87,7 @@ class TaskManager
         fclose($this->fp);
     }
 
-    public function getList($status = "")
+    public function getTasksList($status = "")
     {
         $tasks = $this->importTasks();
         $output = [];

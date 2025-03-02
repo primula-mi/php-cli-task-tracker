@@ -72,6 +72,10 @@ switch ($action)
         $taskManager->markTask($taskId, "done");
         break;
     case "list":
+        $status = $argv[2] ?? "";
+        $list = $taskManager->getTasksList($status);
+        var_dump($list);
+        break;
     
     default:
         echoError("Действие не найдено");

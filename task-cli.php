@@ -39,7 +39,7 @@ switch ($action)
             exit;
         }
 
-        $responce = $taskManager->updateTask($taskId, $description);
+        $responce = $taskManager->updateTask((int)$taskId, $description);
         echoResponce($responce);
         break;
 
@@ -50,7 +50,7 @@ switch ($action)
             echoError("Incorrect issue number type");
             exit;
         }
-        $responce = $taskManager->deleteTask($taskId, $description);
+        $responce = $taskManager->deleteTask((int)$taskId, $description);
         echoResponce($responce);
         break;
 
@@ -61,7 +61,7 @@ switch ($action)
             echoError("Incorrect issue number type");
             exit;
         }
-        $responce = $taskManager->markTask($taskId, "in-progress");
+        $responce = $taskManager->markTask((int)$taskId, "in-progress");
         echoResponce($responce);
         break;
 
@@ -72,7 +72,7 @@ switch ($action)
             echoError("Incorrect issue number type");
             exit;
         }
-        $responce = $taskManager->markTask($taskId, "done");
+        $responce = $taskManager->markTask((int)$taskId, "done");
         echoResponce($responce);
         break;
     case "list":
@@ -112,7 +112,7 @@ function taskTable($tasksList)
     $columns = [];
     foreach ($tasksList as $row_key => $row)
     {
-        foreach (get_object_vars($row) as $cell_key => $cell)
+        foreach ($row as $cell_key => $cell)
         {
             $length = strlen($cell);
             if (empty($columns[$cell_key]) || $columns[$cell_key] < $length)
@@ -125,7 +125,7 @@ function taskTable($tasksList)
     $table = '';
     foreach ($tasksList as $row_key => $row)
     {
-        foreach (get_object_vars($row) as $cell_key => $cell)
+        foreach ($row as $cell_key => $cell)
         $table .= str_pad($cell, $columns[$cell_key]) . '   ';
         $table .= PHP_EOL;
     }

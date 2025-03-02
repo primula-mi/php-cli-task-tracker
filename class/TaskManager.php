@@ -1,27 +1,48 @@
 <?php
 
-
+/**
+* * Class TaskManager
+*
+* Manages tasks stored in a JSON file.
+*/
 class TaskManager
 {
-
+    /**
+     * @var resource resource Pointer to the opened file.
+    */
     private $fp;
+    /**
+     * @var string Path to the task file.
+    */
     private $taskFilePath;
 
+    /**
+     * TaskManager constructor.
+     * 
+     * @param string $path Path to the task file.
+     * @throws InvalidArgumentException If the path is not specified.
+     * @throws RuntimeException If the file cannot be opened.
+    */
     public function __construct(string $path = "")
     {
         $this->taskFilePath = $path;
         if (!$this->taskFilePath)
         {
-            throw new Exception("The path to the task file is not specified");
+            throw new InvalidArgumentException("The path to the task file is not specified");
         }
         
         if (!$this->fp = fopen($this->taskFilePath, 'a'))
         {
-            throw new Exception("Cannot open file ($this->taskFilePath)");
+            throw new RuntimeException("Cannot open file ($this->taskFilePath)");
         }
-        return true;
     }
 
+    /**
+     * Adds a new task.
+     * 
+     * @param string $description Task description.
+     * @return array Operation result.
+    */  
     public function addTask($description)
     {
         $tasks = $this->importTasks();
@@ -29,8 +50,8 @@ class TaskManager
             "id" => count($tasks),
             "description" => $description,
             "status" => "todo",
-            "createdAt" => strtotime("now"),
-            "updatedAt" => strtotime("now"),
+            "createdAt" => time(),
+            "updatedAt" => time(),
         ];
         $tasks[count($tasks)] = $newTask;
         $content = json_encode($tasks);
@@ -39,6 +60,13 @@ class TaskManager
         return ["status" => "success", "code" => 200, "message" => "Added a new task"];
     }
     
+    /**
+     * Updates a task's description.
+     * 
+     * @param int $id Task ID.
+     * @param string $description New task description.
+     * @return array Operation result.
+    */
     public function updateTask($id, $description)
     {
         $tasks = $this->importTasks();
@@ -46,13 +74,19 @@ class TaskManager
             return ["status" => "error", "code" => 404, "message" => "The task with the $id number does not exist"];
         }
         $tasks[$id]->description = $description;
-        $tasks[$id]->updatedAt = strtotime("now");
+        $tasks[$id]->updatedAt = time();
         $content = json_encode($tasks);
         file_put_contents($this->taskFilePath, $content);
         fclose($this->fp);
         return ["status" => "success", "code" => 200, "message" => "Task description $id updated"];
     }
 
+    /**
+     * Deletes a task.
+     * 
+     * @param int $id Task ID.
+     * @return array Operation result.
+     */
     public function deleteTask($id)
     {
         $tasks = $this->importTasks();
@@ -68,6 +102,13 @@ class TaskManager
         return ["status" => "success", "code" => 200, "message" => "Task $id deleted"];
     }
 
+    /**
+     * Changes a task's status.
+     * 
+     * @param int $id Task ID.
+     * @param string $status New task status.
+     * @return array Operation result.
+     */
     public function markTask($id, $status)
     {
         $tasks = $this->importTasks();
@@ -77,7 +118,7 @@ class TaskManager
         }
         
         $tasks[$id]->status = $status;
-        $tasks[$id]->updatedAt = strtotime("now");
+        $tasks[$id]->updatedAt = time();
         
         $content = json_encode($tasks);
         file_put_contents($this->taskFilePath, $content);
@@ -85,6 +126,12 @@ class TaskManager
         return ["status" => "success", "code" => 200, "message" => "The task status $id has been changed to '$status'"];
     }
 
+    /**
+     * Returns a list of tasks.
+     * 
+     * @param string $status Filter by task status.
+     * @return array List of tasks.
+    */
     public function getTasksList($status = "")
     {
         $tasks = $this->importTasks();
@@ -97,19 +144,19 @@ class TaskManager
             }
             return $output;
         }
-        else
-        {
-            return $tasks;
-        }
+        return $tasks;
     }
 
+    /**
+     * Imports tasks from the file.
+     * 
+     * @return array Array of tasks.
+    */
     private function importTasks()
     {
         $content = file_get_contents($this->taskFilePath);
-        $tasks = json_decode($content) ?? [];
-        if (!is_array($tasks)) {
-            $tasks = get_object_vars($tasks);
-        }
+        $tasks = json_decode($content, true) ?? [];
         return $tasks;
     } 
+    
 }

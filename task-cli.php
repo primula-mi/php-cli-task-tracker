@@ -7,7 +7,6 @@ if (count($argv) <= 1) {
 require_once "class/TaskManager.php";
 
 $fileName = "tasks.json";
-// $fileName = "";
 $action = $argv[1];
 $taskManager = new TaskManager($fileName);
 
@@ -86,7 +85,6 @@ switch ($action)
         echo "Task list\n";
         echo taskTable($tasksList);
         break;
-    
     default:
         echoError("Action not found");
         exit;
